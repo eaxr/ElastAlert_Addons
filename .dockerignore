@@ -1,0 +1,13 @@
+*
+!index.js
+!package-lock.json
+!package.json
+!.babelrc
+!src/
+!scripts/
+!rule_templates/
+!elastalert_modules/
+!config/
+!start_elastalert.sh
+!requirements-dev.txt
+!requirements.txt
