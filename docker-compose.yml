@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  elastalert:
+    container_name: elastalert
+    build:
+      context: ./
+      dockerfile: Dockerfile-test
+
+    environment:
+      - "ELASTALERT_HOME=/opt/elastalert"
+      - "ELASTALERT_CONFIG=/opt/elastalert/config.yaml"
+
+    volumes:
+      - ./certs:/opt/elastalert/certs
+      - ./config/elastalert_test.yaml:/opt/elastalert/config.yaml
+      - ./elastalert_modules:/opt/elastalert/elastalert_modules
+      - ./rules:/opt/elastalert/rules
+    working_dir: /opt/elastalert
+
+    network_mode: host
