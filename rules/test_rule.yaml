@@ -1,0 +1,62 @@
+# From example_rules/example_frequency.yaml
+es_host: kibana.domain
+es_port: 9200
+
+# Option basic-auth username and password for Elasticsearch
+use_ssl: True
+es_username: USERNAME
+es_password: PASSWORD
+
+# Use SSL authentication with client certificates client_cert must be
+# a pem file containing both cert and key for client
+verify_certs: True
+ca_certs: /opt/elastalert/.../.crt
+client_cert: /opt/elastalert/.../.crt
+client_key: /opt/elastalert/.../.key
+
+name: grokparsefailure-filebeat
+#type: frequency
+type: frequency
+
+index: filebeat-*
+
+num_events: 1
+
+alert_text_type: alert_text_only
+
+query_delay:
+    seconds: 30
+realert:
+    seconds: 0
+
+timeframe:
+    minutes: 5
+
+aggregation:
+    minutes: 5
+aggregate_by_match_time:
+    minutes: 5
+
+aggregation_key: ["log.file.path"]
+
+filter:
+- query:
+     query_string:
+       query: "tags: _grokparsefailure"
+
+alert_text: |
+  [Kibana URL](https://kibana.domain/app/discover#/doc/filebeat-*/{0}?id={1})
+  `index: {0}`
+  `id: {1}`
+  `time: {2}`
+alert_text_args:
+  - "_index"
+  - "_id"
+  - "@timestamp"
+
+alert:
+- "elastalert_modules.telegram_alerter_module.TelegramAlerter"
+telegram_bot_token: "<token>"
+telegram_room_id: "<id>"
+telegram_use_markdown: "custom"
+telegram_limit_option: "elasticsearch"
