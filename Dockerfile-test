@@ -1,0 +1,43 @@
+FROM ubuntu:latest
+
+ARG ELASTALERT_VERSION=0.2.4
+ENV ELASTALERT_VERSION=${ELASTALERT_VERSION}
+# URL from which to download Elastalert.
+ARG ELASTALERT_URL=https://github.com/Yelp/elastalert/archive/v0.2.4.zip
+ENV ELASTALERT_URL=${ELASTALERT_URL}
+# Elastalert home directory full path.
+ENV ELASTALERT_HOME /opt/elastalert
+ENV ELASTALERT_CONFIG /opt/elastalert/config.yaml
+ENV TZ=Europe/Moscow
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN mkdir -p /var/log/supervisor
+
+WORKDIR /opt
+
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get -y install build-essential python3 python3-dev python3-pip libssl-dev apt-utils git wget unzip tzdata
+
+RUN wget -O elastalert.zip "${ELASTALERT_URL}" && \
+    unzip elastalert.zip && \
+    rm elastalert.zip && \
+    mv e* "${ELASTALERT_HOME}"
+
+WORKDIR "${ELASTALERT_HOME}"
+
+# Install Elastalert.
+# see: https://github.com/Yelp/elastalert/issues/1654
+ADD requirements*.txt ./
+RUN pip3 install -r requirements-dev.txt
+RUN pip3 install --upgrade pip
+
+RUN pip3 install wheel && \
+    pip3 install "setuptools>=11.3"
+
+RUN python3 setup.py install
+RUN pip3 install "elasticsearch>=5.0.0"
+
+COPY start_elastalert.sh /opt/elastalert/start_elastalert.sh
+
+CMD ["/bin/bash", "/opt/elastalert/start_elastalert.sh"]
